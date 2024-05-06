@@ -5,15 +5,23 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/anzai9/pokedexcli/internal/pokeapi"
 )
 
 type cliCommand struct {
 	name        string
 	description string
-	callback    func() error
+	callback    func(*config) error
 }
 
-func commandMap() map[string]cliCommand {
+type config struct {
+	pokeapiClient   pokeapi.Client
+	nextLocationURL *string
+	prevLocationURL *string
+}
+
+func getCommands() map[string]cliCommand {
 	return map[string]cliCommand{
 		"help": {
 			name:        "help",
@@ -25,6 +33,16 @@ func commandMap() map[string]cliCommand {
 			description: "Exit the Pokedex",
 			callback:    commandExit,
 		},
+		"map": {
+			name:        "map",
+			description: "Display the name of 20 locations",
+			callback:    commandMap,
+		},
+		"mapb": {
+			name:        "mapb",
+			description: "Display the prvious 20 locations",
+			callback:    commandMapb,
+		},
 	}
 }
 
@@ -34,21 +52,23 @@ func cleanInput(input string) []string {
 	return words
 }
 
-func startRepl() {
+func startRepl(cfg *config) {
 	scanner := bufio.NewScanner(os.Stdin)
 	for {
 		fmt.Print("pokedex > ")
 		scanner.Scan()
+
 		words := cleanInput(scanner.Text())
 		if len(words) == 0 {
 			continue
 		}
-		cmdName := words[0]
-		cmdMap := commandMap()
-		cmd, exists := cmdMap[cmdName]
 
+		cmdName := words[0]
+
+		cmdMap := getCommands()
+		cmd, exists := cmdMap[cmdName]
 		if exists {
-			err := cmd.callback()
+			err := cmd.callback(cfg)
 			if err != nil {
 				fmt.Println(err)
 			}

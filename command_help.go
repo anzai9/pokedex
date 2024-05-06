@@ -2,12 +2,12 @@ package main
 
 import "fmt"
 
-func commandHelp() error {
+func commandHelp(cfg *config) error {
 	fmt.Println("Welcome to the Pokedex: ")
 	fmt.Println("Usage: <command> <arguments>")
 	fmt.Println()
 	fmt.Println("Commands:")
-	for _, cmd := range commandMap() {
+	for _, cmd := range getCommands() {
 		fmt.Printf("%s: %s\n", cmd.name, cmd.description)
 	}
 	fmt.Println()
